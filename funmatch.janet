@@ -351,38 +351,33 @@
       @['sequence]))
   # pass 1: non-asterisk bits
   (each p parsed
-    (cond
-      (string? p)
+    (if (string? p)
       (array/push scratch p)
-      #
-      (= :asterisk (get p :type))
-      (array/push scratch p) # handle in pass 2
-      #
-      (= :question (get p :type))
-      (array/push scratch 1)
-      #
-      (= :range (get p :type))
-      (array/push scratch
-                  ['range (string (get p :begin) (get p :end))])
-      #
-      (= :set (get p :type))
-      (array/push scratch
-                  ['set (string/join (get p :items))])
-      #
-      (= :neg-range (get p :type))
-      (array/push scratch
-                  ['not ['range (string (get p :begin) (get p :end))]]
+      (let [the-type (get p :type)]
+        (assertf the-type "failed to find :type for: %n" p)
+        (case the-type
+          :asterisk
+          (array/push scratch p) # handle in pass 2
+          :question
+          (array/push scratch 1)
+          :range
+          (array/push scratch
+                      ['range (string (get p :begin) (get p :end))])
+          :set
+          (array/push scratch
+                      ['set (string/join (get p :items))])
+          :neg-range
+          (array/push scratch
+                      ['not ['range (string (get p :begin) (get p :end))]]
                   1)
-      #
-      (= :neg-set (get p :type))
-      (array/push scratch
-                  ['not ['set (string/join (get p :items))]]
-                  1)
-      #
-      (errorf "unexpected item: %n" p)))
+          :neg-set
+          (array/push scratch
+                      ['not ['set (string/join (get p :items))]]
+                      1)
+          (errorf "unexpected item: %n" p)))))
   # finish pass 1
   (array/push scratch -1)
-  # pass 2: modify to handle asterisks
+  # pass 2: handle asterisks starting at the end
   (def temp @[])
   (loop [i :down-to [(dec (length scratch)) 0]
          :let [piece (get scratch i)]]
