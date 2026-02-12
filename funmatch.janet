@@ -20,12 +20,10 @@
 
 # todo
 #
-# * arranging for appropriate files to match against
-#
 # * randomized testing
 #
-# * testing that compares with results from using ls with bash (may be
-#   zsh too?)
+# * testing that compares with results from using ls with multiple
+#   shells
 
 # XXX: things not intended to handle?
 #
