@@ -340,6 +340,75 @@
 
   )
 
+``
+  Consider the following example pattern:
+
+    a*b*c
+
+  It's parsed as:
+
+    @["a"
+      {:type :asterisk}
+      "b"
+      {:type :asterisk}
+      "c"]
+
+  A peg that appears to match the intent is:
+
+    ~(sequence "a"
+               (to (sequence "b" (to (sequence "c" -1))))
+                             ##########################
+               "b"
+               (to (sequence "c" -1))
+                             ######
+               "c"
+               -1)
+
+  The peg can be constructed based on the parsed results
+  using two passes.
+
+  In pass 1, each non-asterisk portion has a corresponding
+  peg subexpression inserted into `(sequence ...)` along
+  with {:type :asterisk} bits for each asterisk.  Finally a
+  -1 is added as the last element of the `(sequence ...)`
+  form:
+
+    ~(sequence "a"
+               {:type :asterisk}
+               "b"
+               {:type :asterisk}
+               "c"
+               -1)
+
+  In pass 2, starting from the end of the `(sequence ...)`
+  form, each peg subexpression is "remembered" as progress
+  is made backwards until a {:type :asterisk} is
+  encountered.  At such an encounter, the struct is
+  replaced with a `(to (sequence ...))` peg subexpression
+  where the inner `...` is replaced with the "remembered"
+  subexpressions from earlier:
+
+    ~(sequence "a"
+               {:type :asterisk}
+               "b"
+               (to (sequence "c" -1))
+               "c"
+               -1)
+
+  Then the "remembered" portions are reset to be a copy
+  of the newly placed `(to (sequence ...))`.  The process
+  continues until the beginning of the outer
+  `(sequence ...)` is reached:
+
+    ~(sequence "a"
+               (to (sequence "b" (to (sequence "c" -1))))
+               "b"
+               (to (sequence "c" -1))
+               "c"
+               -1)
+
+``
+
 (defn make-peg-helper
   [parsed]
   (def scratch
@@ -461,8 +530,8 @@
   (make-peg-helper @[{:type :question} "anet"])
   # =>
   ~(sequence (not ".")
-             1 
-             "anet" 
+             1
+             "anet"
              -1)
 
   (make-peg-helper @[{:type :question}
@@ -555,14 +624,14 @@
   (make-peg-helper @[{:items @["a" "b"]
                       :type :neg-set}])
   # =>
-  ~(sequence (not (set "ab")) 
+  ~(sequence (not (set "ab"))
              1
              -1)
 
   (make-peg-helper @[{:items @["-"]
                       :type :neg-set}])
   # =>
-  ~(sequence (not (set "-")) 
+  ~(sequence (not (set "-"))
              1
              -1)
 
