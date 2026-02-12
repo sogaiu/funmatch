@@ -3,45 +3,53 @@
 
 (comment
 
-  # typically project root when run via niche from project root
-  (def proj-dir (os/cwd))
+  # hack: make usable from inside editor as well as from cli testing
+  (def data-dir
+    (cond
+      (= :directory (os/stat "../.git" :mode))
+      (string (os/cwd) "/../data")
+      #
+      (= :directory (os/stat ".git" :mode))
+      (string (os/cwd) "/data")
+      #
+      (errorf "unexpected current working directory" (os/cwd))))
 
-  (def data-dir (string proj-dir "/data"))
+  (def patterns
+    ["hi"
+     "*"
+     ".jane*"
+     "*.janet"
+     "a*janet"
+     "test.*anet"
+     "a*b*c"
+     "?"
+     "jane?"
+     "?anet"
+     "?*"
+     "a*?"
+     "[t-z]"
+     "[+--]"
+     "[--0]"
+     "[---]"
+     "*.jane[t-z]"
+     "[wxz]"
+     "[aabb]"
+     "[abba]"
+     "[S-]"
+     "[-axz]"
+     "[--]"
+     "[!-a]"
+     "[!a]"
+     "[!ab]"
+     "[!-]"
+     "[!s-t]"
+     "[!--0]"
+     # XXX: to make the test error, uncomment following
+     #"[c-a]*"
+     ])
 
-  (do
-    (def patterns
-      ["hi"
-       "*"
-       ".jane*"
-       "*.janet"
-       "a*janet"
-       "test.*anet"
-       "a*b*c"
-       "?"
-       "jane?"
-       "?anet"
-       "?*"
-       "a*?"
-       "[t-z]"
-       "[+--]"
-       "[--0]"
-       "[---]"
-       "*.jane[t-z]"
-       "[wxz]"
-       "[aabb]"
-       "[abba]"
-       "[S-]"
-       "[-axz]"
-       "[--]"
-       "[!-a]"
-       "[!a]"
-       "[!ab]"
-       "[!-]"
-       "[!s-t]"
-       "[!--0]"
-       # XXX: to make the test error, uncomment following
-       #"[c-a]*"
-       ])
+  (defn try-a-bunch
+    [shell]
     (def old-dir (os/cwd))
     (when (os/getenv "VERBOSE")
       (pp [:old-dir old-dir]))
@@ -51,7 +59,7 @@
       (each patt patterns
         (def cmd-str (string "ls -d " patt))
         (def sh-res
-          (let [result (string/trim (sd/$< bash -c ,cmd-str))]
+          (let [result (string/trim (sd/$< ,shell -c ,cmd-str))]
             (if (not (empty? result))
               (sort (string/split "\n" result))
               @[])))
@@ -81,6 +89,16 @@
             (pp [:peg-missed peg-missed]))))
       #
       (all |(= :ok $) results)))
+
+  (if (os/execute ["bash" "-c" "exit"] :px)
+    (try-a-bunch "bash")
+    true)
+  # =>
+  true
+
+  (if (os/execute ["zsh" "-c" "exit"] :px)
+    (try-a-bunch "zsh")
+    true)
   # =>
   true
 

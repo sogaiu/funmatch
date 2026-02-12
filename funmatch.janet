@@ -23,7 +23,7 @@
 # * randomized testing
 #
 # * testing that compares with results from using ls with multiple
-#   shells
+#   shells (currently test with zsh and bash)
 
 # XXX: things not intended to handle?
 #
