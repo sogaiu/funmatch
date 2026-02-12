@@ -3,6 +3,11 @@
 
 (comment
 
+  # typically project root when run via niche from project root
+  (def proj-dir (os/cwd))
+
+  (def data-dir (string proj-dir "/data"))
+
   (do
     (def patterns
       ["hi"
@@ -37,25 +42,26 @@
        # XXX: to make the test error, uncomment following
        #"[c-a]*"
        ])
-    (def test-dir (os/getenv "HOME"))
     (def old-dir (os/cwd))
+    (when (os/getenv "VERBOSE")
+      (pp [:old-dir old-dir]))
     (def results @[])
     (defer (os/cd old-dir)
-      (os/cd test-dir)
+      (os/cd data-dir)
       (each patt patterns
         (def cmd-str (string "ls -d " patt))
-        (def peg (fm/make-peg patt))
         (def sh-res
           (let [result (string/trim (sd/$< bash -c ,cmd-str))]
             (if (not (empty? result))
               (sort (string/split "\n" result))
               @[])))
-        (def peg-res (->> (filter |(peg/match peg $)
-                                  (os/dir test-dir))
+        (def peg-res (->> (filter |(fm/funmatch patt $)
+                                  (os/dir data-dir))
                           sort))
-        (print)
-        (pp [:patt patt])
-        (pp [:peg peg])
+        (when (os/getenv "VERBOSE")
+          (print)
+          (pp [:patt patt])
+          (pp [:peg (fm/make-peg patt)]))
         (if (deep= sh-res peg-res)
           (array/push results :ok)
           (do
