@@ -69,7 +69,9 @@
         (when (os/getenv "VERBOSE")
           (print)
           (pp [:patt patt])
-          (pp [:peg (fm/make-peg patt)]))
+          (def parsed (fm/parse-pattern patt))
+          (pp [:parsed parsed])
+          (pp [:peg (fm/make-peg-helper parsed)]))
         (if (deep= sh-res peg-res)
           (array/push results :ok)
           (do

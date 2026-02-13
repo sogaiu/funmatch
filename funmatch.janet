@@ -635,16 +635,12 @@
 
   )
 
-(defn make-peg
-  [pattern]
-  (def parsed (parse-pattern pattern))
-  (assertf parsed "failed to parse pattern: %s" pattern)
-  #
-  (make-peg-helper parsed))
-
 (defn funmatch
   [patt str &opt flags]
-  (def peg (make-peg patt))
+  (def parsed (parse-pattern patt))
+  (assertf parsed "failed to parse pattern: %s" patt)
+  #
+  (def peg (make-peg-helper parsed))
   #
   (truthy? (peg/match peg str)))
 
