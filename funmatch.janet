@@ -13,8 +13,8 @@
 
   Patterns
 
-  * * - zero or more characters (except . if leading part of pattern)
-  * ? - one character (except . if leading part of pattern)
+  * * - zero or more characters (except . at string start)
+  * ? - one character (except . at string start)
   * [x-y] - one character in the range x <= y
   * [!x-y] - one character not in the range x <= y
   * [xyz] - one character in the set x, y, ..., z
