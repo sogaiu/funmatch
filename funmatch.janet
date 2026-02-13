@@ -151,7 +151,7 @@
                      :items (sort (distinct $&))})
         :lit (capture (sequence 1))}
       pattern))
-  # massage results so that consecutive strings become continguous
+  # massage results so that consecutive strings become contiguous
   (when m
     (def results @[])
     (def buf @"")
