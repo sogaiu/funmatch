@@ -123,9 +123,10 @@
                           "-"
                           (capture (sequence (not "]") 1))
                           "]")
-                ,|{:type :range
-                   :begin $0
-                   :end $1})
+                ,|(when (<= $0 $1)
+                    {:type :range
+                     :begin $0
+                     :end $1}))
       :set (cmt (sequence "["
                           (opt (capture "]"))
                           (any (sequence (not "]") (capture 1)))
