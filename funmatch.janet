@@ -121,54 +121,41 @@
 #      debugging might be harder?
 (defn parse-pattern
   [pattern]
-  (def m
-    (peg/match
-      ~{:main
-        (sequence (any (choice :ast :que :bang :rng :set :lit)) -1)
-        :ast (cmt (capture "*")
-                  ,(fn [_] {:type :asterisk}))
-        :que (cmt (capture "?")
-                  ,(fn [_] {:type :question}))
-        :bang (cmt (sequence "["
-                             "!"
-                             (opt (capture "]"))
-                             (any (sequence (not "]") (capture 1)))
-                             "]")
-                   ,parse-bang)
-        :rng (cmt (sequence "["
-                            (capture 1)
-                            "-"
-                            (capture (sequence (not "]") 1))
-                            "]")
-                  ,|{:type :range
-                     :begin $0
-                     :end $1})
-        :set (cmt (sequence "["
-                            (opt (capture "]"))
-                            (any (sequence (not "]") (capture 1)))
-                            "]")
-                  ,|{:type :set
-                     :items (sort (distinct $&))})
-        :lit (capture (sequence 1))}
-      pattern))
-  # massage results so that consecutive strings become contiguous
-  (when m
-    (def results @[])
-    (def buf @"")
-    (each item m
-      (if (dictionary? item)
-        (do
-          (when (not (empty? buf))
-            (array/push results (string buf))
-            (buffer/clear buf))
-          (array/push results item))
-        # item should be a string, append it to the buffer
-        (buffer/push buf item)))
-    # save any remaining bits in the buffer
-    (when (not (empty? buf))
-      (array/push results (string buf)))
-    #
-    results))
+  (peg/match
+    ~{:main
+      (sequence (any (choice :ast :que :bang :rng :set :lit)) -1)
+      :ast (cmt (capture "*")
+                ,(fn [_] {:type :asterisk}))
+      :que (cmt (capture "?")
+                ,(fn [_] {:type :question}))
+      :bang (cmt (sequence "["
+                           "!"
+                           (opt (capture "]"))
+                           (any (sequence (not "]") (capture 1)))
+                           "]")
+                 ,parse-bang)
+      :rng (cmt (sequence "["
+                          (capture 1)
+                          "-"
+                          (capture (sequence (not "]") 1))
+                          "]")
+                ,|{:type :range
+                   :begin $0
+                   :end $1})
+      :set (cmt (sequence "["
+                          (opt (capture "]"))
+                          (any (sequence (not "]") (capture 1)))
+                          "]")
+                ,|{:type :set
+                   :items (sort (distinct $&))})
+      # XXX: was previous way (post-processing) better?
+      :lit (accumulate (any (sequence (not :ast)
+                                      (not :que)
+                                      (not :bang)
+                                      (not :rng)
+                                      (not :set)
+                                      (capture 1))))}
+    pattern))
 
 (comment
 
