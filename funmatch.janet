@@ -492,7 +492,7 @@
   )
 
 (defn funmatch
-  [patt str &opt flags]
+  [patt str]
   (def parsed (parse-pattern patt))
   (assertf parsed "failed to parse pattern: %s" patt)
   #
