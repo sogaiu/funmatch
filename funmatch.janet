@@ -277,10 +277,10 @@
 (defn make-peg
   [parsed]
   (def pre-peg
-    (if (and (def head (first parsed))
-             (dictionary? head)
-             (def the-type (get head :type))
-             (get (invert [:asterisk :question]) the-type))
+    (if-let [head (first parsed)
+             _ (dictionary? head)
+             the-type (get head :type)
+             _ (get (invert [:asterisk :question]) the-type)]
       @['sequence '(not ".")]
       @['sequence]))
   # pass 1: non-asterisk bits
