@@ -316,10 +316,10 @@
   (loop [i :down-to [(dec (length pre-peg)) 0]
          :let [piece (get pre-peg i)]]
     (if (and (dictionary? piece) (= :asterisk (get piece :type)))
-      (let [replacement ['to ['sequence ;(reverse temp)]]]
-        (put pre-peg i replacement)
+      (let [substitute ['to ['sequence ;(reverse temp)]]]
+        (put pre-peg i substitute)
         (array/clear temp)
-        (array/push temp replacement))
+        (array/push temp substitute))
       (array/push temp piece)))
   # peg/match won't accept arrays
   (tuple/slice pre-peg))
