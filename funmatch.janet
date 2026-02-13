@@ -92,30 +92,6 @@
 #
 #        emit warning when detected in patterns?
 
-(defn parse-bang
-  [& args]
-  # cmt has matched [!<some-stuff>]
-  #
-  # case a: negative range
-  #
-  # [!s-t] -> neg-range
-  #
-  # case b: negative set
-  #
-  # [!a] -> neg-set
-  # [!ab] -> neg-set
-  # [!-] -> neg-set
-  # [!-a] -> neg-set
-  (if-let [_ (= 3 (length args))
-           [begin mid end] args
-           _ (= "-" mid)
-           _ (<= begin end)]
-    {:type :neg-range
-     :begin begin
-     :end end}
-    {:type :neg-set
-     :items (sort (distinct args))}))
-
 # XXX: could build peg directly?
 #      maintenance might be harder?
 #      debugging might be harder?
@@ -133,7 +109,15 @@
                            (opt (capture "]"))
                            (any (sequence (not "]") (capture 1)))
                            "]")
-                 ,parse-bang)
+                 ,|(if-let [_ (= 3 (length $&))
+                            [begin mid end] $&
+                            _ (= "-" mid)
+                            _ (<= begin end)]
+                     {:type :neg-range
+                      :begin begin
+                      :end end}
+                     {:type :neg-set
+                      :items (sort (distinct $&))}))
       :rng (cmt (sequence "["
                           (capture 1)
                           "-"
