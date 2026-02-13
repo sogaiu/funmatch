@@ -168,12 +168,6 @@
   # =>
   @["a" {:type :asterisk} "janet"]
 
-  (parse-pattern "test.*anet")
-  # =>
-  @["test."
-    {:type :asterisk}
-    "anet"]
-
   (parse-pattern "a*b*c")
   # =>
   @["a"
@@ -208,24 +202,6 @@
      :end "z"
      :type :range}]
 
-  (parse-pattern "[+--]")
-  # =>
-  @[{:begin "+"
-     :end "-"
-     :type :range}]
-
-  (parse-pattern "[--0]")
-  # =>
-  @[{:begin "-"
-     :end "0"
-     :type :range}]
-
-  (parse-pattern "[---]")
-  # =>
-  @[{:begin "-"
-     :end "-"
-     :type :range}]
-
   (parse-pattern "*.jane[t-z]")
   # =>
   @[{:type :asterisk}
@@ -239,29 +215,9 @@
   @[{:items @["w" "x" "z"]
      :type :set}]
 
-  (parse-pattern "[aabb]")
-  # =>
-  @[{:items @["a" "b"]
-     :type :set}]
-
-  (parse-pattern "[abba]")
-  # =>
-  @[{:items @["a" "b"]
-     :type :set}]
-
   (parse-pattern "[S-]")
   # =>
   @[{:items @["-" "S"]
-     :type :set}]
-
-  (parse-pattern "[-axz]")
-  # =>
-  @[{:items @["-" "a" "x" "z"]
-     :type :set}]
-
-  (parse-pattern "[--]")
-  # =>
-  @[{:items @["-"]
      :type :set}]
 
   (parse-pattern "[!a]")
@@ -467,15 +423,6 @@
              "janet"
              -1)
 
-  (make-peg-helper @["test."
-                     {:type :asterisk}
-                     "anet"])
-  # =>
-  ~(sequence "test."
-             (to (sequence "anet" -1))
-             "anet"
-             -1)
-
   (make-peg-helper @["a"
                      {:type :asterisk}
                      "b"
@@ -529,23 +476,6 @@
   # =>
   ~(sequence (range "tz") -1)
 
-  (make-peg-helper @[{:begin "+"
-                      :end "-"
-                      :type :range}])
-  # =>
-  ~(sequence (range "+-") -1)
-
-  (make-peg-helper @[{:begin "-"
-                      :end "0"
-                      :type :range}])
-  # =>
-  ~(sequence (range "-0") -1)
-
-  (make-peg-helper @[{:begin "-"
-                      :end "-"
-                      :type :range}])
-  # =>
-  ~(sequence (range "--") -1)
 
   (make-peg-helper @[{:type :asterisk}
                      ".jane"
@@ -566,25 +496,11 @@
   # =>
   ~(sequence (set "wxz") -1)
 
-  (make-peg-helper @[{:items @["a" "b"]
-                      :type :set}])
-  # =>
-  ~(sequence (set "ab") -1)
 
   (make-peg-helper @[{:items @["S" "-"]
                       :type :set}])
   # =>
   ~(sequence (set "S-") -1)
-
-  (make-peg-helper @[{:items @["-" "a" "x" "z"]
-                      :type :set}])
-  # =>
-  ~(sequence (set "-axz") -1)
-
-  (make-peg-helper @[{:items @["-"]
-                      :type :set}])
-  # =>
-  ~(sequence (set "-") -1)
 
   (make-peg-helper @[{:items @["a"]
                       :type :neg-set}])

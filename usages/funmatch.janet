@@ -3,6 +3,100 @@
 
 (comment
 
+  (fm/parse-pattern "test.*anet")
+  # =>
+  @["test."
+    {:type :asterisk}
+    "anet"]
+
+  (fm/parse-pattern "[+--]")
+  # =>
+  @[{:begin "+"
+     :end "-"
+     :type :range}]
+
+  (fm/parse-pattern "[--0]")
+  # =>
+  @[{:begin "-"
+     :end "0"
+     :type :range}]
+
+  (fm/parse-pattern "[---]")
+  # =>
+  @[{:begin "-"
+     :end "-"
+     :type :range}]
+
+  (fm/parse-pattern "[aabb]")
+  # =>
+  @[{:items @["a" "b"]
+     :type :set}]
+
+  (fm/parse-pattern "[abba]")
+  # =>
+  @[{:items @["a" "b"]
+     :type :set}]
+
+  (fm/parse-pattern "[-axz]")
+  # =>
+  @[{:items @["-" "a" "x" "z"]
+     :type :set}]
+
+  (fm/parse-pattern "[--]")
+  # =>
+  @[{:items @["-"]
+     :type :set}]
+
+  )
+
+(comment
+
+  (fm/make-peg-helper @["test."
+                     {:type :asterisk}
+                     "anet"])
+  # =>
+  ~(sequence "test."
+             (to (sequence "anet" -1))
+             "anet"
+             -1)
+
+  (fm/make-peg-helper @[{:begin "+"
+                      :end "-"
+                      :type :range}])
+  # =>
+  ~(sequence (range "+-") -1)
+
+  (fm/make-peg-helper @[{:begin "-"
+                      :end "0"
+                      :type :range}])
+  # =>
+  ~(sequence (range "-0") -1)
+
+  (fm/make-peg-helper @[{:begin "-"
+                      :end "-"
+                      :type :range}])
+  # =>
+  ~(sequence (range "--") -1)
+
+  (fm/make-peg-helper @[{:items @["a" "b"]
+                      :type :set}])
+  # =>
+  ~(sequence (set "ab") -1)
+
+  (fm/make-peg-helper @[{:items @["-" "a" "x" "z"]
+                      :type :set}])
+  # =>
+  ~(sequence (set "-axz") -1)
+
+  (fm/make-peg-helper @[{:items @["-"]
+                      :type :set}])
+  # =>
+  ~(sequence (set "-") -1)
+
+  )
+
+(comment
+
   # hack: make usable from inside editor as well as from cli testing
   (def data-dir
     (cond
