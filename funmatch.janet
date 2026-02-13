@@ -1,15 +1,11 @@
-# 1. parse glob pattern into pieces
-# 2. create peg from pieces
-
-# keywords: glob, fnmatch, wildmat
-
-# references
+# funmatch - match pattern against string
 #
-# * fnmatch(3)
-# * glob(7)
-# * https://en.wikipedia.org/wiki/Glob_(programming)
+# * the pattern is similar to a glob pattern
+# * the string is typically a filename (no directory portions)
+#
+# e.g. (funmatch "*.janet" "test.janet") should return true
 
-# features
+# patterns
 #
 # * * - zero or more characters (except . if leading part of pattern)
 # * ? - one character (except . if leading part of pattern)
@@ -18,72 +14,21 @@
 # * [xyz] - one character in the set x, y, ..., z
 # * [!xyz] - one character not in the set x, y, ..., z
 
-# XXX: things not intended to handle?
+# implementation notes
 #
-#      [a!] - bash, zsh: event not found
+# the general idea is to:
 #
-#      [a!b] - bash, zsh: event not found
+# 1. parse glob-like pattern into pieces (`parse-pattern`)
+# 2. create peg from parsed pieces (`make-peg`)
+# 3. apply peg/match with the generated peg to a string
+
+# keywords: glob, fnmatch, wildmat
+
+# references
 #
-#      [!] - bash: no such file or directory - matches literally
-#            zsh: event not found (whether file exists or not)
-#
-#      [c-a] - bash: literal match
-#              zsh: no matches found (even if file exists) - use quotes
-#
-#      [c-a]* - bash: literal match
-#               zsh: no matches found (even if file exists) - use quotes
-#
-#      ** - behavior differs among shells and may be complex to
-#           implement as it typically involves paths beneath
-#           the current directory
-#
-#      how to reject these as patterns?
-#
-# XXX: how / whether to handle...
-#
-#      * consecutive *s
-#
-#      * consider not supporting some other characters.  candidates
-#        might be listed here:
-#
-#        https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file
-#        https://stackoverflow.com/a/31976060
-#
-#        following should be avoided on windows (ascii order):
-#
-#        " (double quote)
-#        * (asterisk)
-#        / (forward slash)
-#        : (colon)
-#        < (less than)
-#        > (greater than)
-#        ? (question mark)
-#        \ (backslash)
-#        | (vertical bar or pipe)
-#
-#        additionally might want to avoid in windows:
-#
-#        ; (semicolon) - separator for things like PATH
-#
-#        better to avoid on posix too?
-#
-#        / (forward slash) - separator in paths
-#        : (colon) - separator for things like PATH
-#        < (less than) - used for redirection
-#        > (greater than) - used for redirection
-#        \ (backslash) - awkward because of escaping
-#        | (vertical bar or pipe) - used when chaining commands
-#
-#        requires some care to use:
-#
-#        ! (exclamation point) - used for negation
-#        * (asterisk) - used for zero or more
-#        ? (question mark) - used for some one character
-#        [ (opening / left square bracket) - delimiter for ranges and sets
-#        ] (closing / right square bracket) - delimiter for ranges and sets
-#        - (minus) - used in ranges
-#
-#        emit warning when detected in patterns?
+# * fnmatch(3)
+# * glob(7)
+# * https://en.wikipedia.org/wiki/Glob_(programming)
 
 ``
   Consider the following example pattern:
@@ -154,9 +99,6 @@
 
 ``
 
-# XXX: could build peg directly?
-#      maintenance might be harder?
-#      debugging might be harder?
 (defn parse-pattern
   [pattern]
   (peg/match
