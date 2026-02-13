@@ -311,11 +311,13 @@
 
   (parse-pattern "[!--0]")
   # =>
-  @[{:begin "-" :end "0"
+  @[{:begin "-"
+     :end "0"
      :type :neg-range}]
 
   (parse-pattern "[!s-t]")
-  @[{:begin "s" :end "t"
+  @[{:begin "s"
+     :end "t"
      :type :neg-range}]
 
   (parse-pattern "[!]]")
@@ -337,7 +339,7 @@
 
   )
 
-(defn make-peg-helper
+(defn make-peg
   [parsed]
   (def scratch
     (if (and (def head (first parsed))
@@ -366,7 +368,7 @@
           :neg-range
           (array/push scratch
                       ['not ['range (string (get p :begin) (get p :end))]]
-                  1)
+                      1)
           :neg-set
           (array/push scratch
                       ['not ['set (string/join (get p :items))]]
@@ -389,45 +391,45 @@
 
 (comment
 
-  (make-peg-helper @[])
+  (make-peg @[])
   # =>
   ~(sequence -1)
 
-  (make-peg-helper @["hi"])
+  (make-peg @["hi"])
   # =>
   ~(sequence "hi"
              -1)
 
-  (make-peg-helper @[{:type :asterisk}])
+  (make-peg @[{:type :asterisk}])
   # =>
   ~(sequence (not ".")
              (to (sequence -1))
              -1)
 
-  (make-peg-helper @[".jane" {:type :asterisk}])
+  (make-peg @[".jane" {:type :asterisk}])
   # =>
   ~(sequence ".jane"
              (to (sequence -1))
              -1)
 
-  (make-peg-helper @[{:type :asterisk} ".janet"])
+  (make-peg @[{:type :asterisk} ".janet"])
   # =
   ~(sequence (to (sequence ".janet" -1))
              ".janet"
              -1)
 
-  (make-peg-helper @["a" {:type :asterisk} "janet"])
+  (make-peg @["a" {:type :asterisk} "janet"])
   # =>
   ~(sequence "a"
              (to (sequence "janet" -1))
              "janet"
              -1)
 
-  (make-peg-helper @["a"
-                     {:type :asterisk}
-                     "b"
-                     {:type :asterisk}
-                     "c"])
+  (make-peg @["a"
+              {:type :asterisk}
+              "b"
+              {:type :asterisk}
+              "c"])
   # =>
   ~(sequence "a"
              (to (sequence "b" (to (sequence "c" -1))))
@@ -436,52 +438,52 @@
              "c"
              -1)
 
-  (make-peg-helper @[{:type :question}])
+  (make-peg @[{:type :question}])
   # =>
   ~(sequence (not ".")
              1
              -1)
 
-  (make-peg-helper @["jane" {:type :question}])
+  (make-peg @["jane" {:type :question}])
   # =>
   ~(sequence "jane" 1 -1)
 
-  (make-peg-helper @[{:type :question} "anet"])
+  (make-peg @[{:type :question} "anet"])
   # =>
   ~(sequence (not ".")
              1
              "anet"
              -1)
 
-  (make-peg-helper @[{:type :question}
-                     {:type :asterisk}])
+  (make-peg @[{:type :question}
+              {:type :asterisk}])
   # =>
   ~(sequence (not ".")
              1
              (to (sequence -1))
              -1)
 
-  (make-peg-helper @["a"
-                     {:type :asterisk}
-                     {:type :question}])
+  (make-peg @["a"
+              {:type :asterisk}
+              {:type :question}])
   # =>
   ~(sequence "a"
              (to (sequence 1 -1))
              1
              -1)
 
-  (make-peg-helper @[{:begin "t"
-                      :end "z"
-                      :type :range}])
+  (make-peg @[{:begin "t"
+               :end "z"
+               :type :range}])
   # =>
   ~(sequence (range "tz") -1)
 
 
-  (make-peg-helper @[{:type :asterisk}
-                     ".jane"
-                     {:begin "t"
-                      :end "z"
-                      :type :range}])
+  (make-peg @[{:type :asterisk}
+              ".jane"
+              {:begin "t"
+               :end "z"
+               :type :range}])
   # =>
   ~(sequence (not ".")
              (to (sequence ".jane"
@@ -491,61 +493,64 @@
              (range "tz")
              -1)
 
-  (make-peg-helper @[{:items @["w" "x" "z"]
-                      :type :set}])
+  (make-peg @[{:items @["w" "x" "z"]
+               :type :set}])
   # =>
   ~(sequence (set "wxz") -1)
 
 
-  (make-peg-helper @[{:items @["S" "-"]
-                      :type :set}])
+  (make-peg @[{:items @["S" "-"]
+               :type :set}])
   # =>
   ~(sequence (set "S-") -1)
 
-  (make-peg-helper @[{:items @["a"]
-                      :type :neg-set}])
+  (make-peg @[{:items @["a"]
+               :type :neg-set}])
   # =>
   ~(sequence (not (set "a"))
              1
              -1)
 
-  (make-peg-helper @[{:items @["a" "b"]
-                      :type :neg-set}])
+  (make-peg @[{:items @["a" "b"]
+               :type :neg-set}])
   # =>
   ~(sequence (not (set "ab"))
              1
              -1)
 
-  (make-peg-helper @[{:items @["-"]
-                      :type :neg-set}])
+  (make-peg @[{:items @["-"]
+               :type :neg-set}])
   # =>
   ~(sequence (not (set "-"))
              1
              -1)
 
-  (make-peg-helper @[{:begin "!" :end "a"
-                      :type :range}])
+  (make-peg @[{:begin "!"
+               :end "a"
+               :type :range}])
   # =>
   ~(sequence (range "!a") -1)
 
-  (make-peg-helper @[{:begin "-" :end "0"
-                      :type :neg-range}])
+  (make-peg @[{:begin "-"
+               :end "0"
+               :type :neg-range}])
   # =>
   ~(sequence (not (range "-0")) 1 -1)
 
-  (make-peg-helper @[{:begin "s" :end "t"
-                      :type :neg-range}])
+  (make-peg @[{:begin "s"
+               :end "t"
+               :type :neg-range}])
   # =>
   ~(sequence (not (range "st")) 1 -1)
 
-  (make-peg-helper @[{:items @["]"]
-                      :type :neg-set}])
+  (make-peg @[{:items @["]"]
+               :type :neg-set}])
   # =>
   ~(sequence (not (set "]")) 1 -1)
 
-  (make-peg-helper @[{:begin "]"
-                      :end "_"
-                      :type :neg-range}])
+  (make-peg @[{:begin "]"
+               :end "_"
+               :type :neg-range}])
   # =>
   ~(sequence (not (range "]_")) 1 -1)
 
@@ -556,7 +561,7 @@
   (def parsed (parse-pattern patt))
   (assertf parsed "failed to parse pattern: %s" patt)
   #
-  (def peg (make-peg-helper parsed))
+  (def peg (make-peg parsed))
   #
   (truthy? (peg/match peg str)))
 

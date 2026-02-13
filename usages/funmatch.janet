@@ -51,45 +51,45 @@
 
 (comment
 
-  (fm/make-peg-helper @["test."
-                     {:type :asterisk}
-                     "anet"])
+  (fm/make-peg @["test."
+                 {:type :asterisk}
+                 "anet"])
   # =>
   ~(sequence "test."
              (to (sequence "anet" -1))
              "anet"
              -1)
 
-  (fm/make-peg-helper @[{:begin "+"
-                      :end "-"
-                      :type :range}])
+  (fm/make-peg @[{:begin "+"
+                  :end "-"
+                  :type :range}])
   # =>
   ~(sequence (range "+-") -1)
 
-  (fm/make-peg-helper @[{:begin "-"
-                      :end "0"
-                      :type :range}])
+  (fm/make-peg @[{:begin "-"
+                  :end "0"
+                  :type :range}])
   # =>
   ~(sequence (range "-0") -1)
 
-  (fm/make-peg-helper @[{:begin "-"
-                      :end "-"
-                      :type :range}])
+  (fm/make-peg @[{:begin "-"
+                  :end "-"
+                  :type :range}])
   # =>
   ~(sequence (range "--") -1)
 
-  (fm/make-peg-helper @[{:items @["a" "b"]
-                      :type :set}])
+  (fm/make-peg @[{:items @["a" "b"]
+                  :type :set}])
   # =>
   ~(sequence (set "ab") -1)
 
-  (fm/make-peg-helper @[{:items @["-" "a" "x" "z"]
-                      :type :set}])
+  (fm/make-peg @[{:items @["-" "a" "x" "z"]
+                  :type :set}])
   # =>
   ~(sequence (set "-axz") -1)
 
-  (fm/make-peg-helper @[{:items @["-"]
-                      :type :set}])
+  (fm/make-peg @[{:items @["-"]
+                  :type :set}])
   # =>
   ~(sequence (set "-") -1)
 
@@ -165,7 +165,7 @@
           (pp [:patt patt])
           (def parsed (fm/parse-pattern patt))
           (pp [:parsed parsed])
-          (pp [:peg (fm/make-peg-helper parsed)]))
+          (pp [:peg (fm/make-peg parsed)]))
         (if (deep= sh-res peg-res)
           (array/push results :ok)
           (do
