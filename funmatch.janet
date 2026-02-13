@@ -18,13 +18,6 @@
 # * [xyz] - one character in the set x, y, ..., z
 # * [!xyz] - one character not in the set x, y, ..., z
 
-# todo
-#
-# * randomized testing
-#
-# * testing that compares with results from using ls with multiple
-#   shells (currently test with zsh and bash)
-
 # XXX: things not intended to handle?
 #
 #      [a!] - bash, zsh: event not found
