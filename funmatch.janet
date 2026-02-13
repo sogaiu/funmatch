@@ -276,7 +276,7 @@
 
 (defn make-peg
   [parsed]
-  (def scratch
+  (def pre-peg
     (if (and (def head (first parsed))
              (dictionary? head)
              (def the-type (get head :type))
@@ -286,43 +286,43 @@
   # pass 1: non-asterisk bits
   (each p parsed
     (if (string? p)
-      (array/push scratch p)
+      (array/push pre-peg p)
       (let [the-type (get p :type)]
         (assertf the-type "failed to find :type for: %n" p)
         (case the-type
           :asterisk
-          (array/push scratch p) # handle in pass 2
+          (array/push pre-peg p) # handle in pass 2
           :question
-          (array/push scratch 1)
+          (array/push pre-peg 1)
           :range
-          (array/push scratch
+          (array/push pre-peg
                       ['range (string (get p :begin) (get p :end))])
           :set
-          (array/push scratch
+          (array/push pre-peg
                       ['set (string/join (get p :items))])
           :neg-range
-          (array/push scratch
+          (array/push pre-peg
                       ['not ['range (string (get p :begin) (get p :end))]]
                       1)
           :neg-set
-          (array/push scratch
+          (array/push pre-peg
                       ['not ['set (string/join (get p :items))]]
                       1)
           (errorf "unexpected item: %n" p)))))
   # finish pass 1
-  (array/push scratch -1)
+  (array/push pre-peg -1)
   # pass 2: handle asterisks starting at the end
   (def temp @[])
-  (loop [i :down-to [(dec (length scratch)) 0]
-         :let [piece (get scratch i)]]
+  (loop [i :down-to [(dec (length pre-peg)) 0]
+         :let [piece (get pre-peg i)]]
     (if (and (dictionary? piece) (= :asterisk (get piece :type)))
       (let [replacement ['to ['sequence ;(reverse temp)]]]
-        (put scratch i replacement)
+        (put pre-peg i replacement)
         (array/clear temp)
         (array/push temp replacement))
       (array/push temp piece)))
   # peg/match won't accept arrays
-  (tuple/slice scratch))
+  (tuple/slice pre-peg))
 
 (comment
 
