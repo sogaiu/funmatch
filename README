@@ -1,0 +1,35 @@
+funmatch - match glob-like pattern against string
+
+* pattern is similar to a glob pattern
+* string is typically a filename (no directory portions)
+
+For example:
+
+  (funmatch "*.janet" "test.janet")
+  # =>
+  true
+
+Patterns
+
+* * - zero or more characters (except . if leading part of pattern)
+* ? - one character (except . if leading part of pattern)
+* [x-y] - one character in the range x <= y
+* [!x-y] - one character not in the range x <= y
+* [xyz] - one character in the set x, y, ..., z
+* [!xyz] - one character not in the set x, y, ..., z
+
+Implementation
+
+The general idea is to:
+
+1. Parse glob-like pattern into pieces (parse-pattern)
+2. Create peg from parsed pieces (make-peg)
+3. Apply peg/match to a string using the generated peg
+
+Keywords: glob, fnmatch, wildmat
+
+References
+
+* fnmatch(3)
+* glob(7)
+* https://en.wikipedia.org/wiki/Glob_(programming)

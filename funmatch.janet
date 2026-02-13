@@ -1,36 +1,44 @@
-# funmatch - match pattern against string
-#
-# * the pattern is similar to a glob pattern
-# * the string is typically a filename (no directory portions)
-#
-# e.g. (funmatch "*.janet" "test.janet") should return true
+(def usage
+  ``
+  funmatch - match glob-like pattern against string
 
-# patterns
-#
-# * * - zero or more characters (except . if leading part of pattern)
-# * ? - one character (except . if leading part of pattern)
-# * [x-y] - one character in the range x <= y
-# * [!x-y] - one character not in the range x <= y
-# * [xyz] - one character in the set x, y, ..., z
-# * [!xyz] - one character not in the set x, y, ..., z
+  * pattern is similar to a glob pattern
+  * string is typically a filename (no directory portions)
 
-# implementation notes
-#
-# the general idea is to:
-#
-# 1. parse glob-like pattern into pieces (`parse-pattern`)
-# 2. create peg from parsed pieces (`make-peg`)
-# 3. apply peg/match with the generated peg to a string
+  For example:
 
-# keywords: glob, fnmatch, wildmat
+    (funmatch "*.janet" "test.janet")
+    # =>
+    true
 
-# references
-#
-# * fnmatch(3)
-# * glob(7)
-# * https://en.wikipedia.org/wiki/Glob_(programming)
+  Patterns
 
-``
+  * * - zero or more characters (except . if leading part of pattern)
+  * ? - one character (except . if leading part of pattern)
+  * [x-y] - one character in the range x <= y
+  * [!x-y] - one character not in the range x <= y
+  * [xyz] - one character in the set x, y, ..., z
+  * [!xyz] - one character not in the set x, y, ..., z
+
+  Implementation
+
+  The general idea is to:
+
+  1. Parse glob-like pattern into pieces (parse-pattern)
+  2. Create peg from parsed pieces (make-peg)
+  3. Apply peg/match to a string using the generated peg
+
+  Keywords: glob, fnmatch, wildmat
+
+  References
+
+  * fnmatch(3)
+  * glob(7)
+  * https://en.wikipedia.org/wiki/Glob_(programming)
+  ``)
+
+(def notes
+  ``
   Consider the following example pattern:
 
     a*b*c
@@ -97,7 +105,7 @@
                "c"
                -1)
 
-``
+  ``)
 
 (defn parse-pattern
   [pattern]
@@ -591,4 +599,8 @@
   false
 
   )
+
+(defn main
+  [& args]
+  (print usage))
 
