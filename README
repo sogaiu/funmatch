@@ -1,6 +1,6 @@
 funmatch - match glob-like pattern against string
 
-* pattern is similar to a glob pattern
+* pattern is a simplified glob-like pattern [1]
 * string is typically a filename (no directory portions)
 
 For example:
@@ -11,8 +11,8 @@ For example:
 
 Patterns
 
-* * - zero or more characters (except . at string start)
-* ? - one character (except . at string start)
+* * - zero or more characters
+* ? - one character
 * [x-y] - one character in the range x <= y
 * [!x-y] - one character not in the range x <= y
 * [xyz] - one character in the set x, y, ..., z
@@ -33,3 +33,10 @@ References
 * fnmatch(3)
 * glob(7)
 * https://en.wikipedia.org/wiki/Glob_(programming)
+
+---
+
+[1] Various behavior and constructs are not supported,
+    e.g. leading dots in names are not treated
+    specially, sets and ranges must be expressed
+    separately, no escape characters, etc.

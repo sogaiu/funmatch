@@ -2,7 +2,7 @@
   ``
   funmatch - match glob-like pattern against string
 
-  * pattern is similar to a glob pattern
+  * pattern is a simplified glob-like pattern [1]
   * string is typically a filename (no directory portions)
 
   For example:
@@ -13,8 +13,8 @@
 
   Patterns
 
-  * * - zero or more characters (except . at string start)
-  * ? - one character (except . at string start)
+  * * - zero or more characters
+  * ? - one character
   * [x-y] - one character in the range x <= y
   * [!x-y] - one character not in the range x <= y
   * [xyz] - one character in the set x, y, ..., z
@@ -35,6 +35,13 @@
   * fnmatch(3)
   * glob(7)
   * https://en.wikipedia.org/wiki/Glob_(programming)
+
+  ---
+
+  [1] Various behavior and constructs are not supported,
+      e.g. leading dots in names are not treated
+      specially, sets and ranges must be expressed
+      separately, no escape characters, etc.
   ``)
 
 (def notes
@@ -237,6 +244,12 @@
   @[{:items @["a"]
      :type :neg-set}]
 
+  (parse-pattern "[!a]janet")
+  # =>
+  @[{:items @["a"]
+     :type :neg-set}
+    "janet"]
+
   (parse-pattern "[!ab]")
   # =>
   @[{:items @["a" "b"]
@@ -284,13 +297,7 @@
 
 (defn make-peg
   [parsed]
-  (def pre-peg
-    (if-let [head (first parsed)
-             _ (dictionary? head)
-             the-type (get head :type)
-             _ (get (invert [:asterisk :question]) the-type)]
-      @['sequence '(not ".")]
-      @['sequence]))
+  (def pre-peg @['sequence])
   # pass 1: non-asterisk bits
   (each p parsed
     (if (string? p)
@@ -345,8 +352,7 @@
 
   (make-peg @[{:type :asterisk}])
   # =>
-  ~(sequence (not ".")
-             (to (sequence -1))
+  ~(sequence (to (sequence -1))
              -1)
 
   (make-peg @[".jane" {:type :asterisk}])
@@ -383,8 +389,7 @@
 
   (make-peg @[{:type :question}])
   # =>
-  ~(sequence (not ".")
-             1
+  ~(sequence 1
              -1)
 
   (make-peg @["jane" {:type :question}])
@@ -393,16 +398,14 @@
 
   (make-peg @[{:type :question} "anet"])
   # =>
-  ~(sequence (not ".")
-             1
+  ~(sequence 1
              "anet"
              -1)
 
   (make-peg @[{:type :question}
               {:type :asterisk}])
   # =>
-  ~(sequence (not ".")
-             1
+  ~(sequence 1
              (to (sequence -1))
              -1)
 
@@ -428,8 +431,7 @@
                :end "z"
                :type :range}])
   # =>
-  ~(sequence (not ".")
-             (to (sequence ".jane"
+  ~(sequence (to (sequence ".jane"
                            (range "tz")
                            -1))
              ".jane"
@@ -520,7 +522,7 @@
 
   (funmatch "*" ".hi")
   # =>
-  false
+  true
 
   (funmatch ".jane*" ".janet")
   # =>
@@ -567,6 +569,10 @@
   false
 
   (funmatch "[!abc]" "d")
+  # =>
+  true
+
+  (funmatch "[!a]janet" ".janet")
   # =>
   true
 
